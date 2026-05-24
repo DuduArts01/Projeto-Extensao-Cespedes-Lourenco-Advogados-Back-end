@@ -1,20 +1,21 @@
-
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(ktorLibs.plugins.ktor)
     alias(libs.plugins.kotlin.serialization)
+    application
 }
 
 group = "calculadora-penal"
 version = "1.0.0-SNAPSHOT"
 
 application {
-    mainClass.set("com.cespede.ApplicationKt")
+    mainClass.set("io.ktor.server.netty.EngineMain")
 }
 
 kotlin {
     jvmToolchain(21)
 }
+
 dependencies {
     implementation(ktorLibs.serialization.kotlinx.json)
     implementation(ktorLibs.server.config.yaml)
@@ -27,4 +28,16 @@ dependencies {
 
     testImplementation(kotlin("test"))
     testImplementation(ktorLibs.server.testHost)
+}
+
+ktor {
+    fatJar {
+        archiveFileName.set("app.jar")
+    }
+}
+
+tasks {
+    test {
+        useJUnitPlatform()
+    }
 }

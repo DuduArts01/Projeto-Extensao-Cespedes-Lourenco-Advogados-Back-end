@@ -1,379 +1,196 @@
-# ⚖️ Calculadora Penal Jurídica - Backend API
+# 🔧 Correções Necessárias para Deploy
 
-> **Cespedes Lourenço Advogados** • Projeto de Extensão Universitária
+## ❌ Problemas Encontrados no build.gradle.kts
 
-[![Kotlin](https://img.shields.io/badge/Kotlin-1.9+-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org/)
-[![Ktor](https://img.shields.io/badge/Ktor-2.3+-087CFA?logo=ktor&logoColor=white)](https://ktor.io/)
-[![JDK](https://img.shields.io/badge/JDK-17+-orange?logo=openjdk&logoColor=white)](https://openjdk.org/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+### 1. **Plugins Duplicados**
+```kotlin
+// ❌ ERRADO - Você tinha:
+plugins {
+    kotlin("jvm") version "1.9.22"           // Declaração explícita
+    id("io.ktor.plugin") version "2.3.7"    // Declaração explícita
+    application
+    alias(libs.plugins.kotlin.jvm)           // DUPLICADO via catalog
+    alias(ktorLibs.plugins.ktor)             // DUPLICADO via catalog
+    alias(libs.plugins.kotlin.serialization)
+}
 
-API backend desenvolvida para automatizar o cálculo de progressão de regime penal, determinando com precisão matemática as datas de transição entre os regimes fechado, semiaberto e aberto, além do livramento condicional e término da pena, em conformidade com a legislação brasileira vigente.
-
----
-
-## 📋 Índice
-
-- [Funcionalidades](#-funcionalidades)
-- [Endpoints da API](#-endpoints-da-api)
-- [Instalação e Execução](#-instalação-e-execução)
-- [Tecnologias Utilizadas](#-tecnologias-utilizadas)
-- [Estrutura do Projeto](#-estrutura-do-projeto)
-- [Exemplos de Uso](#-exemplos-de-uso)
-- [Testes](#-testes)
-- [Equipe](#-equipe-e-autoria)
-- [Roadmap](#-futuras-melhorias-roadmap)
-- [Referências](#-referências)
-- [Licença](#-licença)
-
----
-
-## ✨ Funcionalidades
-
-- ✅ Cálculo automatizado de progressão de regime penal
-- ✅ Suporte a diferentes tipos de crime (comum, hediondo, equiparado)
-- ✅ Distinção entre réu primário e reincidente
-- ✅ Remição de pena por trabalho (3 dias trabalhados = 1 dia remido)
-- ✅ Remição por estudo (12 horas de estudo = 1 dia remido)
-- ✅ Remição por leitura (1 livro lido = 4 dias remidos, máx. 12 livros/ano)
-- ✅ Cálculo de detração (dias já cumpridos)
-- ✅ Determinação de datas de transição entre regimes
-- ✅ Projeção de livramento condicional
-- ✅ Conformidade com o Pacote Anticrime (Lei nº 13.964/2019)
-
----
-
-## 🔗 Endpoints da API
-
-### **POST /calculate**
-
-Endpoint principal responsável por receber os dados do apenado e retornar a projeção detalhada do cronograma de progressão de regime.
-
-#### Requisição (Body JSON)
-
-```json
-{
-  "penaltyYears": 4,
-  "penaltyMonths": 0,
-  "penaltyDays": 0,
-  "baseDate": "2026-05-24",
-  "detractionDays": 0,
-  "crimeType": "COMMON",
-  "inmateStatus": "PRIMARY",
-  "daysWorked": 90,
-  "studyHours": 0,
-  "booksRead": 2
+// ✅ CORRETO - Use apenas os alias:
+plugins {
+    alias(libs.plugins.kotlin.jvm)
+    alias(ktorLibs.plugins.ktor)
+    alias(libs.plugins.kotlin.serialization)
+    application
 }
 ```
 
-#### Parâmetros
+### 2. **mainClass Duplicado**
+```kotlin
+// ❌ ERRADO - Você tinha:
+application {
+    mainClass.set("com.cespede.ApplicationKt")      // Primeira declaração
+    mainClass.set("io.ktor.server.netty.EngineMain") // Segunda declaração (sobrescreve)
+}
 
-| Campo | Tipo | Descrição | Obrigatório |
-|-------|------|-----------|-------------|
-| `penaltyYears` | Integer | Anos da pena aplicada | Sim |
-| `penaltyMonths` | Integer | Meses da pena aplicada | Sim |
-| `penaltyDays` | Integer | Dias da pena aplicada | Sim |
-| `baseDate` | String (ISO 8601) | Data de início do cumprimento da pena | Sim |
-| `detractionDays` | Integer | Dias já cumpridos (detração) | Não (padrão: 0) |
-| `crimeType` | Enum | Tipo de crime: `COMMON`, `HEINOUS`, `EQUIVALENT` | Sim |
-| `inmateStatus` | Enum | Status do apenado: `PRIMARY`, `RECIDIVIST` | Sim |
-| `daysWorked` | Integer | Dias trabalhados para remição | Não (padrão: 0) |
-| `studyHours` | Integer | Horas de estudo para remição | Não (padrão: 0) |
-| `booksRead` | Integer | Livros lidos para remição (máx. 12/ano) | Não (padrão: 0) |
-
-#### Resposta (200 OK)
-
-```json
-{
-  "metrics": {
-    "totalPenaltyDays": 1460,
-    "totalRemittedDays": 38,
-    "remainingPenaltyDays": 1422
-  },
-  "schedule": {
-    "closedRegimeStartDate": "2026-05-24",
-    "semiOpenEligibilityDate": "2026-12-06",
-    "openEligibilityDate": "2027-07-28",
-    "conditionalReleaseDate": "2027-08-16",
-    "penaltyEndDate": "2030-04-15"
-  },
-  "notes": "Calculation successfully performed in compliance with the Anti-Crime Package (Law No. 13.964/2019)."
+// ✅ CORRETO - Use apenas uma:
+application {
+    mainClass.set("io.ktor.server.netty.EngineMain")
 }
 ```
 
-#### Estrutura da Resposta
-
-| Campo | Descrição |
-|-------|-----------|
-| `metrics.totalPenaltyDays` | Total de dias da pena original |
-| `metrics.totalRemittedDays` | Total de dias remidos (trabalho, estudo, leitura) |
-| `metrics.remainingPenaltyDays` | Dias efetivos a cumprir após remições |
-| `schedule.closedRegimeStartDate` | Data de início do regime fechado |
-| `schedule.semiOpenEligibilityDate` | Data elegível para regime semiaberto |
-| `schedule.openEligibilityDate` | Data elegível para regime aberto |
-| `schedule.conditionalReleaseDate` | Data elegível para livramento condicional |
-| `schedule.penaltyEndDate` | Data de término total da pena |
-| `notes` | Observações sobre o cálculo realizado |
+**IMPORTANTE:** Use `io.ktor.server.netty.EngineMain` quando estiver usando `application.conf` para configurar o Ktor (que é o seu caso).
 
 ---
 
-## 🚀 Instalação e Execução
+## 📝 Arquivos Que Você Precisa Atualizar
 
-### Pré-requisitos
+### 1️⃣ **build.gradle.kts** (substitua pelo arquivo que gerei)
 
-- **JDK 17** ou superior ([Download](https://openjdk.org/))
-- **Gradle Wrapper** (já incluído no projeto)
+Baixe o arquivo `build.gradle.kts` que gerei e substitua o seu.
 
-### Passos para Executar Localmente
+**Principais mudanças:**
+- ✅ Removida duplicação de plugins
+- ✅ Removida declaração duplicada de mainClass
+- ✅ Mantido JDK 21 (compatível com seu projeto)
+- ✅ Mantida configuração do fatJar com nome `app.jar`
 
-1. **Clone o repositório:**
+### 2️⃣ **Dockerfile** (substitua pelo arquivo atualizado que gerei)
 
-```bash
-git clone https://github.com/DuduArts01/Projeto-Extensao-Cespedes-Lourenco-Advogados-Back-end.git
-cd Projeto-Extensao-Cespedes-Lourenco-Advogados-Back-end
+Atualizei o Dockerfile para usar **JDK 21** ao invés de 17, compatível com seu `jvmToolchain(21)`.
+
+**Mudanças:**
+```dockerfile
+# Build stage - Atualizado de JDK 17 para JDK 21
+FROM gradle:8.5-jdk21 AS build
+
+# Runtime stage - Atualizado de JDK 17 para JDK 21
+FROM eclipse-temurin:21-jre-alpine
 ```
 
-2. **Execute os testes automatizados:**
+### 3️⃣ **application.yaml** (verifique se existe)
 
-```bash
-# Windows
-.\gradlew.bat test
+Como você está usando `ktorLibs.server.config.yaml`, você provavelmente tem um arquivo `application.yaml` ao invés de `application.conf`.
 
-# Linux/Mac
-./gradlew test
+**Localize:** `src/main/resources/application.yaml`
+
+**Deve estar assim:**
+
+```yaml
+ktor:
+  deployment:
+    host: 0.0.0.0  # CRÍTICO: deve ser 0.0.0.0
+    port: 8080
+    port: ${PORT}  # Lê variável de ambiente
+  application:
+    modules:
+      - com.cespede.ApplicationKt.module  # Ajuste para o caminho correto do seu módulo
 ```
 
-3. **Inicie o servidor:**
+**OU se for application.conf:**
 
-```bash
-# Windows
-.\gradlew.bat run
-
-# Linux/Mac
-./gradlew run
-```
-
-4. **Confirmação de inicialização:**
-
-Quando o servidor estiver pronto, você verá no terminal:
-
-```
-INFO  io.ktor.server.Application - Application started in X.XXX seconds.
-INFO  io.ktor.server.Application - Responding at http://0.0.0.0:8080
-```
-
-5. **Acesse a API:**
-
-A API estará disponível em: **http://localhost:8080/calculate**
-
----
-
-## 🛠️ Tecnologias Utilizadas
-
-- **[Kotlin](https://kotlinlang.org/)** - Linguagem de programação moderna e concisa
-- **[Ktor](https://ktor.io/)** - Framework assíncrono para aplicações server-side
-- **[Gradle](https://gradle.org/)** - Sistema de automação de build
-- **[JUnit](https://junit.org/)** - Framework de testes unitários
-- **[Kotlinx Serialization](https://github.com/Kotlin/kotlinx.serialization)** - Serialização JSON nativa do Kotlin
-
----
-
-## 📁 Estrutura do Projeto
-
-```
-calculadora-penal-backend/
-├── src/
-│   ├── main/
-│   │   ├── kotlin/
-│   │   │   ├── Application.kt          # Entry point da aplicação
-│   │   │   ├── routes/                 # Rotas da API
-│   │   │   ├── models/                 # Modelos de dados
-│   │   │   ├── services/               # Lógica de negócio
-│   │   │   └── utils/                  # Utilitários e helpers
-│   │   └── resources/
-│   │       └── application.conf        # Configurações do Ktor
-│   └── test/
-│       └── kotlin/                     # Testes automatizados
-├── gradle/
-├── build.gradle.kts                    # Configurações do Gradle
-├── gradlew.bat                         # Gradle Wrapper (Windows)
-├── gradlew                             # Gradle Wrapper (Linux/Mac)
-├── settings.gradle.kts
-└── README.md
-```
-
----
-
-## 💡 Exemplos de Uso
-
-### Usando cURL
-
-```bash
-curl -X POST http://localhost:8080/calculate \
-  -H "Content-Type: application/json" \
-  -d '{
-    "penaltyYears": 4,
-    "penaltyMonths": 0,
-    "penaltyDays": 0,
-    "baseDate": "2026-05-24",
-    "detractionDays": 0,
-    "crimeType": "COMMON",
-    "inmateStatus": "PRIMARY",
-    "daysWorked": 90,
-    "studyHours": 0,
-    "booksRead": 2
-  }'
-```
-
-### Usando JavaScript (Fetch API)
-
-```javascript
-const calculatePenalty = async () => {
-  const response = await fetch('http://localhost:8080/calculate', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      penaltyYears: 4,
-      penaltyMonths: 0,
-      penaltyDays: 0,
-      baseDate: '2026-05-24',
-      detractionDays: 0,
-      crimeType: 'COMMON',
-      inmateStatus: 'PRIMARY',
-      daysWorked: 90,
-      studyHours: 0,
-      booksRead: 2
-    })
-  });
-  
-  const data = await response.json();
-  console.log(data);
-};
-
-calculatePenalty();
-```
-
-### Usando Python (Requests)
-
-```python
-import requests
-
-url = "http://localhost:8080/calculate"
-payload = {
-    "penaltyYears": 4,
-    "penaltyMonths": 0,
-    "penaltyDays": 0,
-    "baseDate": "2026-05-24",
-    "detractionDays": 0,
-    "crimeType": "COMMON",
-    "inmateStatus": "PRIMARY",
-    "daysWorked": 90,
-    "studyHours": 0,
-    "booksRead": 2
+```hocon
+ktor {
+    deployment {
+        host = "0.0.0.0"
+        port = 8080
+        port = ${?PORT}
+    }
+    application {
+        modules = [ com.cespede.ApplicationKt.module ]
+    }
 }
-
-response = requests.post(url, json=payload)
-print(response.json())
 ```
 
 ---
 
-## 🧪 Testes
+## 🎯 Checklist de Arquivos
 
-O projeto conta com uma suíte completa de testes automatizados cobrindo:
+Antes de fazer o push, verifique:
 
-- ✅ Cálculo de remição por trabalho
-- ✅ Cálculo de remição por estudo
-- ✅ Cálculo de remição por leitura
-- ✅ Progressão de regime para crimes comuns
-- ✅ Progressão de regime para crimes hediondos
-- ✅ Tratamento de réus primários e reincidentes
-- ✅ Validação de datas e cálculos de detração
+- [ ] ✅ `build.gradle.kts` corrigido (sem duplicações)
+- [ ] ✅ `Dockerfile` atualizado para JDK 21
+- [ ] ✅ `application.yaml` ou `application.conf` com host `0.0.0.0`
+- [ ] ✅ `.dockerignore` na raiz
+- [ ] ✅ `gradlew` com permissão de execução
 
-### Executar testes
+---
+
+## 🚀 Comandos Para Aplicar as Correções
 
 ```bash
-# Windows
-.\gradlew.bat test
+# 1. Substitua os arquivos pelos que gerei
+# - build.gradle.kts
+# - Dockerfile
+# - .dockerignore (se ainda não tiver)
 
-# Linux/Mac
-./gradlew test
+# 2. Adicione permissão ao gradlew
+git update-index --chmod=+x gradlew
+
+# 3. Verifique o application.yaml
+# Certifique-se que host: 0.0.0.0 e port: ${PORT}
+
+# 4. Teste localmente (opcional mas recomendado)
+./gradlew clean build
+
+# 5. Commit e push
+git add .
+git commit -m "fix: corrige build.gradle.kts e atualiza Dockerfile para JDK 21"
+git push origin main
 ```
 
-### Relatório de cobertura
+---
 
-```bash
-# Windows
-.\gradlew.bat jacocoTestReport
+## ⚠️ Sobre o mainClass
 
-# Linux/Mac
-./gradlew jacocoTestReport
+Existem **duas formas** de iniciar uma aplicação Ktor:
+
+### **Opção 1: EngineMain (Recomendado)** ✅
+```kotlin
+application {
+    mainClass.set("io.ktor.server.netty.EngineMain")
+}
+```
+- ✅ Usa `application.yaml` ou `application.conf`
+- ✅ Mais configurável
+- ✅ Melhor para produção
+
+### **Opção 2: Application.kt direto**
+```kotlin
+application {
+    mainClass.set("com.cespede.ApplicationKt")
+}
+```
+- ⚠️ Precisa configurar tudo em código
+- ⚠️ Menos flexível
+
+**Como você está usando `ktorLibs.server.config.yaml`, você DEVE usar a Opção 1!**
+
+---
+
+## 🐛 Possível Erro se Não Corrigir
+
+Se não corrigir o `mainClass` duplicado, o Render pode falhar com:
+
+```
+Error: Could not find or load main class com.cespede.ApplicationKt
 ```
 
-O relatório estará disponível em: `build/reports/jacoco/test/html/index.html`
+Ou pior: pode iniciar, mas não ler as configurações do `application.yaml` corretamente.
 
 ---
 
-## 👥 Equipe e Autoria
+## ✅ Depois de Aplicar as Correções
 
-- **Desenvolvedor:** Eduardo (Engenharia de Software)
-- **Empresa Jurídica:** Cespedes Lourenço Advogados
-- **Contato Institucional:** contato@cespedeslourenco.com.br
+1. Faça push do código corrigido
+2. No Render, configure conforme as imagens que você mostrou
+3. Clique em "Create Web Service"
+4. Aguarde o build (pode demorar 5-10 minutos na primeira vez)
 
----
+Se tudo der certo, você verá:
 
-## 🗺️ Futuras Melhorias (Roadmap)
+```
+==> Starting service with 'java -jar app.jar'
+INFO  io.ktor.server.application - Application started in X.XXX seconds.
+INFO  io.ktor.server.application - Responding at http://0.0.0.0:8080
+```
 
-- [ ] **Persistência de dados** - Integração com PostgreSQL/MySQL
-- [ ] **Autenticação JWT** - Sistema seguro de autenticação de usuários e advogados
-- [ ] **Exportação PDF** - Geração automática de cronogramas em formato PDF
-- [ ] **Integração PJe/BNMP** - Sincronização com sistemas judiciais nacionais
-- [ ] **Documentação OpenAPI** - Especificação Swagger/OpenAPI 3.0
-- [ ] **Docker** - Containerização da aplicação
-- [ ] **CI/CD** - Pipeline automatizado de integração e deploy
-- [ ] **Logs estruturados** - Sistema de logging avançado
-- [ ] **Métricas e monitoring** - Integração com Prometheus/Grafana
-- [ ] **API Gateway** - Rate limiting e controle de acesso
-
----
-
-## 📚 Referências
-
-- [Lei nº 7.210/1984](http://www.planalto.gov.br/ccivil_03/leis/l7210.htm) - Lei de Execução Penal (LEP)
-- [Lei nº 13.964/2019](http://www.planalto.gov.br/ccivil_03/_ato2019-2022/2019/lei/L13964.htm) - Pacote Anticrime
-- [Ktor Framework Documentation](https://ktor.io/docs/) - Documentação oficial do Ktor
-- Material técnico e diretrizes - Setor operacional da Cespedes Lourenço Advogados
-
----
-
-## 📄 Licença
-
-Este projeto é licenciado sob a [Licença MIT](LICENSE) - veja o arquivo LICENSE para mais detalhes.
-
----
-
-## 🤝 Contribuindo
-
-Contribuições são bem-vindas! Por favor, siga estes passos:
-
-1. Faça um fork do projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/NovaFuncionalidade`)
-3. Commit suas mudanças (`git commit -m 'Adiciona nova funcionalidade'`)
-4. Push para a branch (`git push origin feature/NovaFuncionalidade`)
-5. Abra um Pull Request
-
----
-
-## 📞 Suporte
-
-Para questões técnicas ou jurídicas relacionadas ao projeto, entre em contato:
-
-- **Email:** contato@cespedeslourenco.com.br
-- **Issues:** [GitHub Issues](https://github.com/DuduArts01/Projeto-Extensao-Cespedes-Lourenco-Advogados-Back-end/issues)
-
----
-
-<p align="center">
-  Desenvolvido com ⚖️ por <strong>Cespedes Lourenço Advogados</strong>
-</p>
+🎉 Sucesso!
