@@ -8,13 +8,12 @@ RUN gradle build --no-daemon
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
-# Copia o JAR do build stage de forma direta
-# Ajustamos para buscar qualquer arquivo .jar dentro da pasta libs
-COPY --from=build /home/gradle/src/build/libs/*.jar app.jar
+# Copia especificamente o app.jar que você identificou na pasta
+COPY --from=build /home/gradle/src/build/libs/app.jar /app/app.jar
 
 EXPOSE 8080
 ENV PORT=8080
 ENV KTOR_ENV=production
 
-# Comando de execução
+# Executa o JAR
 ENTRYPOINT ["java", "-jar", "app.jar"]
