@@ -41,3 +41,9 @@ tasks {
         useJUnitPlatform()
     }
 }
+
+tasks.withType<org.gradle.jvm.tasks.Jar> {
+    manifest {
+        attributes["Main-Class"] = "io.ktor.server.netty.EngineMain"
+    }
+}
