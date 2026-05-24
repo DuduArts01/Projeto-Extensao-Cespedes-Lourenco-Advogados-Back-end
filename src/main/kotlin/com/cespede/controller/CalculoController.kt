@@ -21,7 +21,7 @@ fun Application.configureRouting() {
                 // --- Input Validation Layer ---
                 val errorMessage = when {
                     request.penaltyMonths !in 0..11 -> "Months must be between 0 and 11."
-                    request.penaltyDays !in 0..30 -> "Days must be between 0 and 30."
+                    request.penaltyDays !in 0..29 -> "Days must be between 0 and 29."
                     (request.penaltyYears == 0 && request.penaltyMonths == 0 && request.penaltyDays == 0) -> "Total sentence duration cannot be zero."
                     request.penaltyYears < 0 -> "Years cannot be negative."
                     else -> null
