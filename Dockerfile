@@ -9,7 +9,7 @@ FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
 # Copia especificamente o app.jar que você identificou na pasta
-COPY --from=build /home/gradle/src/build/libs/app.jar /app/app.jar
+COPY --from=build /home/gradle/src/build/libs/*.jar /app/app.jar
 
 EXPOSE 8080
 ENV PORT=8080
