@@ -121,12 +121,12 @@ POST /calculate
 
 **URL Base (Produção):**
 ```
-https://calculadora-penal-api.onrender.com/calculate
+https://calculadora-penal-api.onrender.com
 ```
 
 **URL Base (Desenvolvimento Local):**
 ```
-http://localhost:8080/calculate
+http://localhost:8080
 ```
 
 ---
