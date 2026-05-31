@@ -24,6 +24,8 @@ fun Application.configureRouting() {
                     request.penaltyDays !in 0..29 -> "Days must be between 0 and 29."
                     (request.penaltyYears == 0 && request.penaltyMonths == 0 && request.penaltyDays == 0) -> "Total sentence duration cannot be zero."
                     request.penaltyYears < 0 -> "Years cannot be negative."
+                    request.initialRegime !in listOf("CLOSED", "SEMI_OPEN", "OPEN") ->
+                        "Invalid initialRegime. Accepted values: CLOSED, SEMI_OPEN, OPEN."
                     else -> null
                 }
 

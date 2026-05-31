@@ -1,8 +1,0 @@
-ktor:
-  deployment:
-    host: 0.0.0.0  # ← IMPORTANTE: deve ser 0.0.0.0
-    port: 8080
-    port: ${PORT}  # ← Lê da variável de ambiente
-  application:
-    modules:
-      - com.cespede.ApplicationKt.module

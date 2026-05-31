@@ -146,6 +146,7 @@ A API aceita os seguintes parâmetros no corpo da requisição (formato JSON):
   "detractionDays": Integer,
   "crimeType": String (Enum),
   "inmateStatus": String (Enum),
+  "initialRegime": String (Enum),
   "daysWorked": Integer,
   "studyHours": Integer,
   "booksRead": Integer
@@ -163,6 +164,7 @@ A API aceita os seguintes parâmetros no corpo da requisição (formato JSON):
 | `detractionDays` | Integer | ❌ Não | Dias já cumpridos (detração) | >= 0 (padrão: 0) |
 | `crimeType` | String | ✅ Sim | Tipo de crime cometido | `COMMON`, `HEINOUS`, `EQUIVALENT` |
 | `inmateStatus` | String | ✅ Sim | Status do apenado | `PRIMARY`, `RECIDIVIST` |
+| `initialRegime` | String | ✅ Sim | Regime inicial em que o apenado se encontra | `CLOSED`, `SEMI_OPEN`, `OPEN` |
 | `daysWorked` | Integer | ❌ Não | Dias trabalhados para remição | >= 0 (padrão: 0) |
 | `studyHours` | Integer | ❌ Não | Horas de estudo para remição | >= 0 (padrão: 0) |
 | `booksRead` | Integer | ❌ Não | Livros lidos para remição (máx. 12/ano) | 0-12 (padrão: 0) |
@@ -228,9 +230,9 @@ A API aceita os seguintes parâmetros no corpo da requisição (formato JSON):
 
 | Campo | Tipo | Descrição |
 |-------|------|-----------|
-| `closedRegimeStartDate` | String | Data de início do regime fechado |
-| `semiOpenEligibilityDate` | String | Data elegível para regime semiaberto |
-| `openEligibilityDate` | String | Data elegível para regime aberto |
+| `closedRegimeStartDate` | String\|null | Data de início do regime fechado. `null` se `initialRegime` for `SEMI_OPEN` ou `OPEN` |
+| `semiOpenEligibilityDate` | String\|null | Data elegível para regime semiaberto. `null` se `initialRegime` for `SEMI_OPEN` ou `OPEN` |
+| `openEligibilityDate` | String\|null | Data elegível para regime aberto. `null` se `initialRegime` for `OPEN` |
 | `conditionalReleaseDate` | String | Data elegível para livramento condicional |
 | `penaltyEndDate` | String | Data de término total da pena |
 
@@ -257,6 +259,7 @@ curl -X POST https://projeto-extensao-cespedes-lourenco.onrender.com/calculate \
     "detractionDays": 0,
     "crimeType": "COMMON",
     "inmateStatus": "PRIMARY",
+    "initialRegime": "CLOSED",
     "daysWorked": 90,
     "studyHours": 0,
     "booksRead": 2
@@ -308,6 +311,7 @@ curl -X POST https://projeto-extensao-cespedes-lourenco.onrender.com/calculate \
     "detractionDays": 180,
     "crimeType": "HEINOUS",
     "inmateStatus": "RECIDIVIST",
+    "initialRegime": "CLOSED",
     "daysWorked": 365,
     "studyHours": 144,
     "booksRead": 12
@@ -346,7 +350,57 @@ curl -X POST https://projeto-extensao-cespedes-lourenco.onrender.com/calculate \
 
 ---
 
-#### **Exemplo 3: JavaScript (Fetch API)**
+#### **Exemplo 3: Regime Inicial Semiaberto**
+
+**Request:**
+
+```bash
+curl -X POST https://projeto-extensao-cespedes-lourenco.onrender.com/calculate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "penaltyYears": 6,
+    "penaltyMonths": 0,
+    "penaltyDays": 0,
+    "baseDate": "2024-03-01",
+    "detractionDays": 0,
+    "crimeType": "COMMON",
+    "inmateStatus": "PRIMARY",
+    "initialRegime": "SEMI_OPEN",
+    "daysWorked": 120,
+    "studyHours": 0,
+    "booksRead": 0
+  }'
+```
+
+**Response:**
+
+```json
+{
+  "metrics": {
+    "totalPenaltyDays": 2190,
+    "totalRemittedDays": 40,
+    "remainingPenaltyDays": 2150
+  },
+  "schedule": {
+    "closedRegimeStartDate": null,
+    "semiOpenEligibilityDate": null,
+    "openEligibilityDate": "2024-12-07",
+    "conditionalReleaseDate": "2025-03-28",
+    "penaltyEndDate": "2030-01-11"
+  },
+  "notes": "Calculation performed from SEMI-OPEN initial regime. Only open eligibility and subsequent dates are applicable. Compliant with Law No. 13.964/2019."
+}
+```
+
+**Análise do Cálculo:**
+- **Regime inicial:** Semiaberto — datas de fechado e semiaberto não se aplicam (`null`)
+- **Pena total:** 6 anos = 2.190 dias
+- **Remição por trabalho:** 120 dias ÷ 3 = 40 dias remidos
+- **Progressão para aberto:** 32% da pena (16% × 2, crime comum + primário)
+
+---
+
+#### **Exemplo 4: JavaScript (Fetch API)**
 
 ```javascript
 const calculatePenalty = async () => {
@@ -391,7 +445,7 @@ calculatePenalty();
 
 ---
 
-#### **Exemplo 4: Python (Requests)**
+#### **Exemplo 5: Python (Requests)**
 
 ```python
 import requests

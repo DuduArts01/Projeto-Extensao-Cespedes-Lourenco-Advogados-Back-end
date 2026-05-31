@@ -13,6 +13,7 @@ data class CalculationRequest(
     val detractionDays: Int,
     val crimeType: String, // "COMMON", "VIOLENT", "HEINOUS", "HEINOUS_DEATH"
     val inmateStatus: String, // "PRIMARY", "RECIDIVIST"
+    val initialRegime: String, // "CLOSED", "SEMI_OPEN", "OPEN"
     val daysWorked: Int,
     val studyHours: Int,
     val booksRead: Int

@@ -53,12 +53,7 @@ class CalculadoraPenalService {
             else -> 1.0 / 3.0
         }
 
-        // Date calculations
-        val daysToSemiOpen = ceil(totalPenaltyDays * progressionPercentage).toLong()
-        val daysToOpen = ceil(totalPenaltyDays * (progressionPercentage * 2)).toLong() 
-
-        val semiOpenDate = baseDateLocalDate.plusDays(daysToSemiOpen - totalRemittedDays)
-        val openDate = baseDateLocalDate.plusDays(daysToOpen - totalRemittedDays)
+        // Date calculations based on initialRegime
         val penaltyEndDate = baseDateLocalDate.plusDays(remainingPenaltyDays.toLong())
 
         val conditionalReleaseStr = if (isConditionalReleaseForbidden) {
@@ -66,6 +61,48 @@ class CalculadoraPenalService {
         } else {
             val daysToConditionalRelease = ceil(totalPenaltyDays * conditionalReleasePercentage).toLong()
             baseDateLocalDate.plusDays(daysToConditionalRelease - totalRemittedDays).toString()
+        }
+
+        // Resolve schedule fields according to the initial regime:
+        // CLOSED    → calculates all progression dates normally
+        // SEMI_OPEN → inmate already in semi-open; no closed start or semi-open eligibility,
+        //             only open eligibility and onwards are calculated
+        // OPEN      → inmate already in open regime; only penalty end and conditional release remain
+        val closedRegimeStartDateStr: String?
+        val semiOpenEligibilityDateStr: String?
+        val openEligibilityDateStr: String?
+
+        when (request.initialRegime) {
+            "SEMI_OPEN" -> {
+                closedRegimeStartDateStr = null
+                semiOpenEligibilityDateStr = null
+                val daysToOpen = ceil(totalPenaltyDays * (progressionPercentage * 2)).toLong()
+                openEligibilityDateStr = baseDateLocalDate.plusDays(daysToOpen - totalRemittedDays).toString()
+            }
+            "OPEN" -> {
+                closedRegimeStartDateStr = null
+                semiOpenEligibilityDateStr = null
+                openEligibilityDateStr = null
+            }
+            else -> { // "CLOSED" or any unrecognised value defaults to closed
+                val daysToSemiOpen = ceil(totalPenaltyDays * progressionPercentage).toLong()
+                val daysToOpen = ceil(totalPenaltyDays * (progressionPercentage * 2)).toLong()
+                closedRegimeStartDateStr = baseDateLocalDate.toString()
+                semiOpenEligibilityDateStr = baseDateLocalDate.plusDays(daysToSemiOpen - totalRemittedDays).toString()
+                openEligibilityDateStr = baseDateLocalDate.plusDays(daysToOpen - totalRemittedDays).toString()
+            }
+        }
+
+        // Build notes message
+        val notesMessage = when {
+            isConditionalReleaseForbidden ->
+                "Progressions calculated. Conditional release is FORBIDDEN by law for heinous crimes with death outcome."
+            request.initialRegime == "SEMI_OPEN" ->
+                "Calculation performed from SEMI-OPEN initial regime. Only open eligibility and subsequent dates are applicable. Compliant with Law No. 13.964/2019."
+            request.initialRegime == "OPEN" ->
+                "Calculation performed from OPEN initial regime. Only penalty end date and conditional release date are applicable. Compliant with Law No. 13.964/2019."
+            else ->
+                "Calculation successfully performed in compliance with the Anti-Crime Package (Law No. 13.964/2019)."
         }
 
         // Returning response
@@ -76,17 +113,13 @@ class CalculadoraPenalService {
                 remainingPenaltyDays = remainingPenaltyDays
             ),
             schedule = ScheduleResponse(
-                closedRegimeStartDate = baseDateLocalDate.toString(),
-                semiOpenEligibilityDate = semiOpenDate.toString(),
-                openEligibilityDate = openDate.toString(),
+                closedRegimeStartDate = closedRegimeStartDateStr,
+                semiOpenEligibilityDate = semiOpenEligibilityDateStr,
+                openEligibilityDate = openEligibilityDateStr,
                 conditionalReleaseDate = conditionalReleaseStr,
                 penaltyEndDate = penaltyEndDate.toString()
             ),
-            notes = if (isConditionalReleaseForbidden) {
-                "Progressions calculated. Conditional release is FORBIDDEN by law for heinous crimes with death outcome."
-            } else {
-                "Calculation successfully performed in compliance with the Anti-Crime Package (Law No. 13.964/2019)."
-            }
+            notes = notesMessage
         )
     }
 }
