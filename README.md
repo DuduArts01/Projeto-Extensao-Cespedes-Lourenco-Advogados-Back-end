@@ -1,4 +1,4 @@
-# ⚖️ API Calculadora Penal Jurídica - Backend
+<img width="1521" height="681" alt="image" src="https://github.com/user-attachments/assets/9c8cd22a-a78b-4758-9f97-b04026d0236a" /># ⚖️ API Calculadora Penal Jurídica - Backend
 
 > **Projeto de Extensão Universitária** em parceria com **Cespedes Lourenço Advogados**
 
@@ -247,7 +247,7 @@ Mensagem explicativa sobre o cálculo realizado e conformidade com a legislaçã
 **Request:**
 
 ```bash
-curl -X POST https://calculadora-penal-api.onrender.com/calculate \
+curl -X POST https://projeto-extensao-cespedes-lourenco.onrender.com/calculate \
   -H "Content-Type: application/json" \
   -d '{
     "penaltyYears": 4,
@@ -298,7 +298,7 @@ curl -X POST https://calculadora-penal-api.onrender.com/calculate \
 **Request:**
 
 ```bash
-curl -X POST https://calculadora-penal-api.onrender.com/calculate \
+curl -X POST https://projeto-extensao-cespedes-lourenco.onrender.com/calculate \
   -H "Content-Type: application/json" \
   -d '{
     "penaltyYears": 8,
@@ -351,7 +351,7 @@ curl -X POST https://calculadora-penal-api.onrender.com/calculate \
 ```javascript
 const calculatePenalty = async () => {
   try {
-    const response = await fetch('https://calculadora-penal-api.onrender.com/calculate', {
+    const response = await fetch('https://projeto-extensao-cespedes-lourenco.onrender.com/calculate', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -397,7 +397,7 @@ calculatePenalty();
 import requests
 import json
 
-url = "https://calculadora-penal-api.onrender.com/calculate"
+url = "https://projeto-extensao-cespedes-lourenco.onrender.com/calculate"
 
 payload = {
     "penaltyYears": 4,
@@ -447,7 +447,7 @@ const PenaltyCalculator = () => {
     setError(null);
 
     try {
-      const response = await fetch('https://calculadora-penal-api.onrender.com/calculate', {
+      const response = await fetch('https://projeto-extensao-cespedes-lourenco.onrender.com/calculate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
