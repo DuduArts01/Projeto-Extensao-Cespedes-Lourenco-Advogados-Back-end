@@ -21,6 +21,7 @@ class CalculadoraPenalServiceTest {
             detractionDays = 0,
             crimeType = "COMMON",
             inmateStatus = "PRIMARY",
+            initialRegime = "CLOSED",
             daysWorked = 0,
             studyHours = 0,
             booksRead = 0
