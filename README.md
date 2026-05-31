@@ -1,4 +1,4 @@
-<img width="1521" height="681" alt="image" src="https://github.com/user-attachments/assets/9c8cd22a-a78b-4758-9f97-b04026d0236a" /># ⚖️ API Calculadora Penal Jurídica - Backend
+# ⚖️ API Calculadora Penal Jurídica - Backend
 
 > **Projeto de Extensão Universitária** em parceria com **Cespedes Lourenço Advogados**
 
