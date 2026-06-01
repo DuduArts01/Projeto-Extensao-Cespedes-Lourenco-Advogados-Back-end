@@ -736,8 +736,8 @@ O relatório HTML estará disponível em: `build/reports/jacoco/test/html/index.
 
 ### Desenvolvimento
 
-- **Eduardo** - Engenheiro de Software (Backend Developer)
-- **[Nome do Frontend Developer]** - Frontend Developer
+- **Eduardo** - Backend Developer
+- **Luka Santos** - Frontend Developer
 
 ### Parceria Jurídica
 
